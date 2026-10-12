@@ -57,5 +57,24 @@ pipeline {
                 }
             }
         }
+        stage('Test EC2 SSH') {
+    steps {
+        withCredentials([
+            sshUserPrivateKey(
+                credentialsId: 'ec2-ssh-key',
+                keyFileVariable: 'SSH_KEY'
+            )
+        ]) {
+            sh '''
+                ssh -i "$SSH_KEY" \
+                    -o UserKnownHostsFile=/tmp/ec2_known_hosts \
+                    -o StrictHostKeyChecking=yes \
+                    -o BatchMode=yes \
+                    ubuntu@13.232.122.23 \
+                    "hostname"
+            '''
+        }
+    }
+}
     }
 }
