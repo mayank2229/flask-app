@@ -76,5 +76,36 @@ pipeline {
         }
     }
 }
+stage('Deploy to EC2') {
+    steps {
+        withCredentials([
+            sshUserPrivateKey(
+                credentialsId: 'ec2-ssh-key',
+                keyFileVariable: 'SSH_KEY'
+            )
+        ]) {
+            sh '''
+                ssh -i "$SSH_KEY" \
+                    -o UserKnownHostsFile=/tmp/ec2_known_hosts \
+                    -o StrictHostKeyChecking=yes \
+                    -o BatchMode=yes \
+                    ubuntu@13.232.122.23 \
+                    "sudo docker pull mayank22447/flask-app:latest && \
+                     sudo docker rm -f flask-app || true"
+
+                ssh -i "$SSH_KEY" \
+                    -o UserKnownHostsFile=/tmp/ec2_known_hosts \
+                    -o StrictHostKeyChecking=yes \
+                    -o BatchMode=yes \
+                    ubuntu@13.232.122.23 \
+                    "sudo docker run -d \
+                     --name flask-app \
+                     --restart unless-stopped \
+                     -p 80:5000 \
+                     mayank22447/flask-app:latest"
+            '''
+        }
+    }
+}
     }
 }
