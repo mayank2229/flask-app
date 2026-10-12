@@ -12,12 +12,13 @@ pipeline {
             steps {
                 sh 'python3 --version'
                 sh 'git --version'
-                sh 'python3 -m venv .venv'
+                sh 'docker version'
             }
         }
 
         stage('Install Dependencies') {
             steps {
+                sh 'python3 -m venv .venv'
                 sh '.venv/bin/python -m pip install --upgrade pip'
                 sh '.venv/bin/python -m pip install -r requirements.txt'
             }
@@ -26,6 +27,12 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '.venv/bin/python -m pytest -v'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t flask-app:latest .'
             }
         }
     }
