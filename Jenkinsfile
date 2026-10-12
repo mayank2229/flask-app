@@ -35,5 +35,27 @@ pipeline {
                 sh 'docker build -t flask-app:latest .'
             }
         }
+
+        stage('Tag Docker Image') {
+            steps {
+                sh 'docker tag flask-app:latest mayank22447/flask-app:latest'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_TOKEN'
+                )]) {
+                    sh '''
+                        echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push mayank22447/flask-app:latest
+                        docker logout
+                    '''
+                }
+            }
+        }
     }
 }
